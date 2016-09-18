@@ -14,16 +14,22 @@ from django.utils import timezone
 
 @api_view(['POST', 'GET'])
 def post_participation(request):
-	if request.method == 'POST':
-		try:
-			google_id = request.POST.get("google_id", "")
-			event_id = request.POST.get("facebook_id", "")
-		except:
-			return Response({"error": "Couldn't find google_id"})
+    if request.method == 'POST':
+        try:
+            google_id = request.POST.get("google_id", "")
+            event_id = request.POST.get("facebook_id", "")
+        except:
+            return Response({"error": "Couldn't find google_id"})
 
-		person = Person.objects.get(google_id=google_id)
+        try:
+            event = Event.objects.get(facebook_id=event_id)
+            person = Person.objects.get(google_id=google_id)
+        except:
+            return Response({"error" : "Something went horribly wrong"})
 
-	return Response({"success" : True})
+        person.events_attended.add(event)
+
+    return Response({"success" : True})
 
 
 def is_current_event(event):
@@ -44,6 +50,17 @@ def is_current_event(event):
 def current_events(request):
     url = "https://va4lqabq07.execute-api.eu-west-1.amazonaws.com/techsoc/events"
     all_events = json.loads(requests.get(url).text)
+
+    #updating the events model at every query
+    for event in all_events:
+        try:
+            Event.objects.get(facebook_id=event["id"])
+        except:
+            desc = event["description"] if "description" in event else "No description"
+
+            instance = Event(facebook_id=event["id"], event_name=event["name"], event_description=desc)
+            instance.save()
+
 
     current_events = list(filter(lambda k: is_current_event(k), all_events))
 
