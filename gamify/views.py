@@ -28,7 +28,8 @@ def post_participation(request):
             return Response({"error" : "Something went horribly wrong"})
 
         person.events_attended.add(event)
-
+        person.points += event.points
+        person.save()
     return Response({"success" : True})
 
 
@@ -50,7 +51,25 @@ def is_current_event(event):
 def current_events(request):
     url = "https://va4lqabq07.execute-api.eu-west-1.amazonaws.com/techsoc/events"
     all_events = json.loads(requests.get(url).text)
-
+    all_events.append({
+        "name": "Hack the North 2016",
+        "end_time": "2016-09-19T20:00:00+0100",
+        "start_time": "2016-09-16T10:00:00+0100",
+        "description": """The University of Waterloo Engineering is home to Canada’s largest engineering school — a pipeline for engineering talent for the world’s leading companies. Ranked among the top 50 engineering schools in the world, the school’s reputation for excellence is built on the foundation of co-op education and a bold history of innovation.""",
+        "id": "1751637811790081",
+        "place": {
+        "name": "UCL",
+        "location": {
+               "country": "Canada",
+               "street": "Waterloo",
+               "latitude": 51.524342470225,
+               "longitude": -0.13407040013093,
+               "zip": "CT14 9",
+               "city": "Ontario"
+        },
+        "id": "92637159209"
+     }
+    })
     #updating the events model at every query
     for event in all_events:
         try:
@@ -65,4 +84,26 @@ def current_events(request):
     current_events = list(filter(lambda k: is_current_event(k), all_events))
 
     return Response(current_events)
+
+
+@api_view(['POST'])
+def register_user(request):
+    try:
+        google_id = request.POST["google_id"]
+        name = request.POST["name"]
+    except:
+        return Response({"error" : "Parsing data failed"})
+
+    try:
+        person = Person.objects.get(google_id=google_id)
+    except:
+
+        instance = Person(google_id=google_id, name=name)
+
+        instance.save()
+
+        return Response({"success" : True})
+
+    return Response({"success" : False})
+
 
