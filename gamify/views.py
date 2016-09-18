@@ -55,7 +55,7 @@ def current_events(request):
         "name": "Hack the North 2016",
         "end_time": "2016-09-19T20:00:00+0100",
         "start_time": "2016-09-16T10:00:00+0100",
-        "description": """The University of Waterloo Engineering is home to Canada’s largest engineering school — a pipeline for engineering talent for the world’s leading companies. Ranked among the top 50 engineering schools in the world, the school’s reputation for excellence is built on the foundation of co-op education and a bold history of innovation.""",
+        "description": "This is Hack the North - Harambe",
         "id": "1751637811790081",
         "place": {
         "name": "UCL",
@@ -105,5 +105,3 @@ def register_user(request):
         return Response({"success" : True})
 
     return Response({"success" : False})
-
-
